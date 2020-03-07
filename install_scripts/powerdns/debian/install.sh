@@ -23,10 +23,13 @@ fi
 
 
 # 'yes' / anything
+declare -r CLEAR_EXISTING_INSTALL='yes'
+
+# 'yes' / anything
 declare -r DO_INITIAL_UPDATE='yes'
 
-# 'distrib'/'latest'
-declare -r VERSION_DESIRED_MARIADB='distrib'
+# 'distrib' / 'latest' / 'none'
+declare -r VERSION_DESIRED_MARIADB='none'
 
 # 'yes' / anything
 declare -r INITIATE_PDNS_DB='yes'
@@ -64,6 +67,7 @@ case "${VERSION_DESIRED_MARIADB:-}" in
     "distrib")
         echo -e "\n--- --- --- Installing MariaDB from your OS distribution."
         apt install mariadb-server
+        mysql_secure_installation
         ;;
 
     "latest")
@@ -72,6 +76,11 @@ case "${VERSION_DESIRED_MARIADB:-}" in
         #apt-key adv --recv-keys --keyserver keyserver.ubuntu.com 0xF1656F24C74CD1D8
         #add-apt-repository 'deb [arch=amd64] http://mariadb.mirror.liquidtelecom.com/repo/10.4/debian buster main'
         #apt-get update && apt-get -y install mariadb-server
+        #mysql_secure_installation
+        ;;
+
+    "none")
+        echo -e "\n--- --- --- Installation of MariaDB is prohibited by configuration."
         ;;
 
     *)
@@ -81,17 +90,20 @@ case "${VERSION_DESIRED_MARIADB:-}" in
 esac
 
 
-# Securing MySQL/MariaDB installation.
-mysql_secure_installation
-
 echo -e "\n--- --- --- Gathering info."
 echo "We need to know MariaDB root's password."
 read -s -p "Enter the password: " mysql_root_password
 echo
 
 
-if [[ "${INITIATE_PDNS_DB}" == "yes" ]]; then
+if [[ "${INITIATE_PDNS_DB:-}" == "yes" ]]; then
     echo -e "\n--- --- --- Initiating PowerDNS database."
+
+    if [[ "${CLEAR_EXISTING_INSTALL}" == "yes" ]]; then
+        echo "(DEBUGGING) Clearing previously configured DB."
+        echo "DROP DATABASE powerdns;" | mysql --user="root" --password="${mysql_root_password}"
+    fi
+
     mysql --user="root" --password="${mysql_root_password}" < ${MY_PATH}/sql01.sql # provide previously set password
 else
     echo -e "\n--- --- --- PowerDNS database initiating is prohibited by configuration."
