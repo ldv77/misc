@@ -83,19 +83,23 @@ esac
 # Securing MySQL/MariaDB installation.
 mysql_secure_installation
 
-read -s -p "We need to know MariaDB root's password: " mysql_root_password
+echo
+echo "We need to know MariaDB root's password."
+read -s -p "Enter the password: " mysql_root_password
+echo
 
 mysql --user="root" --password="${mysql_root_password}" < ${MY_PATH}/sql01.sql # provide previously set password
 
 
 # install powerdns and configure db parameters
+echo "--- --- --- Installing PowerDNS."
 apt-get -y install pdns-server pdns-backend-mysql
 
-cp ${MY_PATH}/pdns.local.gmysql.conf /etc/powerdns/pdns.d/
-exit 1
 
+cp "${MY_PATH}/pdns.local.gmysql.conf" "/etc/powerdns/pdns.d/"
 
-vi /etc/powerdns/pdns.d/pdns.local.gmysql.conf # db configuration
+# PowerDNS DB configuration here.
+vi "/etc/powerdns/pdns.d/pdns.local.gmysql.conf"
 
 
 
