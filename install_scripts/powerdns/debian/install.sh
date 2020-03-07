@@ -111,7 +111,7 @@ if [[ "${INITIATE_PDNS_DB:-}" == "yes" ]]; then
 
     if [[ "${CLEAR_EXISTING_INSTALL}" == "yes" ]]; then
         echo "(DEBUGGING) Clearing previously configured DB."
-        echo "DROP DATABASE powerdns;" | mysql --user="root" --password="${mysql_root_password}"
+        echo "DROP DATABASE IF EXISTS powerdns;" | mysql --user="root" --password="${mysql_root_password}"
     fi
 
     pv "${MY_PATH}/sql01.sql" | mysql --user="root" --password="${mysql_root_password}"
