@@ -73,8 +73,6 @@ if [[ "${CLEAR_EXISTING_INSTALL}" == "yes" ]]; then
     rm -rf "/etc/mysql" "/var/lib/mysql"
 fi
 
-exit
-
 case "${VERSION_DESIRED_MARIADB:-}" in
     "distrib")
         echo -e "\n--- --- --- Installing MariaDB from your OS distribution."
@@ -133,7 +131,7 @@ cp "${MY_PATH}/pdns.local.gmysql.conf" "/etc/powerdns/pdns.d/"
 vi "/etc/powerdns/pdns.d/pdns.local.gmysql.conf"
 
 
-exit 1
+exit
 
 
 # install dnsutils for testing, curl and finally PowerDNS-Admin
