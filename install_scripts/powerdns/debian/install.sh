@@ -33,8 +33,6 @@ declare -r VERSION_DESIRED_MARIADB='distrib'
 # Are we root?
 if [[ $EUID -ne 0 ]]; then
     die "Current job is configured to run under 'root' credentials. Use 'sudo' or something."
-else
-    log "Runtime credentials check OK." 50
 fi
 
 # Get script absolute path.
