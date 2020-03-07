@@ -104,7 +104,7 @@ if [[ "${INITIATE_PDNS_DB:-}" == "yes" ]]; then
         echo "DROP DATABASE powerdns;" | mysql --user="root" --password="${mysql_root_password}"
     fi
 
-    mysql --user="root" --password="${mysql_root_password}" < ${MY_PATH}/sql01.sql # provide previously set password
+    pv "${MY_PATH}/sql01.sql" | mysql --user="root" --password="${mysql_root_password}"
 else
     echo -e "\n--- --- --- PowerDNS database initiating is prohibited by configuration."
 fi
