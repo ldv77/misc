@@ -23,7 +23,7 @@ fi
 
 
 # 'yes'/anything
-declare -r DO_INITIAL_UPDATE='yes'
+declare -r DO_INITIAL_UPDATE='no'
 
 # 'distrib'/'latest'
 declare -r VERSION_DESIRED_MARIADB='distribf'
@@ -56,7 +56,6 @@ else
 
 fi
 
-exit
 
 # MariaDB installation.
 case "${VERSION_DESIRED_MARIADB:-}" in
@@ -72,6 +71,10 @@ case "${VERSION_DESIRED_MARIADB:-}" in
         die "Unexpected value of VERSION_DESIRED_MARIADB: \"${VERSION_DESIRED_MARIADB:-}\""
         ;;
 esac
+
+
+exit
+
 
 # run the secure script to set root password, remove test database and disable remote root user login, you can safely accept the defaults and provide an strong root password when prompted
 mysql_secure_installation
