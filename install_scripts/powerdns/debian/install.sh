@@ -54,7 +54,7 @@ if [[ "${DO_INITIAL_UPDATE:-}" == "yes" ]]; then
 
     apt-get update && apt-get -y dist-upgrade
     apt-get -y install software-properties-common dirmngr
-    apt-get -y install git python-pip
+    apt-get -y install git pv python-pip
 
 else
     echo -e "\n--- --- --- Initial system upgrade is prohibited by configuration."
