@@ -26,7 +26,7 @@ fi
 declare -r DO_INITIAL_UPDATE='yes'
 
 # 'distrib'/'latest'
-declare -r VERSION_DESIRED_MARIADB='distrib'
+declare -r VERSION_DESIRED_MARIADB='distribf'
 
 
 
@@ -44,7 +44,7 @@ fi
 
 
 # Upgrade system and install dependencies.
-if [[ "${DO_INITIAL_UPDATE}" == "yes" ]]; then
+if [[ "${DO_INITIAL_UPDATE:-}" == "yes" ]]; then
     echo "--- --- --- Doing initial system upgrade."
 
     apt-get update && apt-get -y dist-upgrade
@@ -58,10 +58,20 @@ fi
 
 exit
 
-# install and prepare last stable mariadb version
-apt-key adv --recv-keys --keyserver keyserver.ubuntu.com 0xF1656F24C74CD1D8
-add-apt-repository 'deb [arch=amd64] http://mariadb.mirror.liquidtelecom.com/repo/10.4/debian buster main'
-apt-get update && apt-get -y install mariadb-server 
+# MariaDB installation.
+case "${VERSION_DESIRED_MARIADB:-}" in
+    "distrib")
+        ;;
+    "latest")
+        die "Latest MariaDB verion installation is not yet implemented."
+        apt-key adv --recv-keys --keyserver keyserver.ubuntu.com 0xF1656F24C74CD1D8
+        add-apt-repository 'deb [arch=amd64] http://mariadb.mirror.liquidtelecom.com/repo/10.4/debian buster main'
+        apt-get update && apt-get -y install mariadb-server
+        ;;
+    *)
+        die "Unexpected value of VERSION_DESIRED_MARIADB: \"${VERSION_DESIRED_MARIADB:-}\""
+        ;;
+esac
 
 # run the secure script to set root password, remove test database and disable remote root user login, you can safely accept the defaults and provide an strong root password when prompted
 mysql_secure_installation
