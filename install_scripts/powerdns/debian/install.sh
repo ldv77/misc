@@ -39,8 +39,9 @@ fi
 MY_PATH="`dirname \"$0\"`"
 MY_PATH="`( cd \"$MY_PATH\" && pwd )`"
 if [ -z "$MY_PATH" ] ; then
-	  exit 1
+	  die "Unable to get MY_PATH."
 fi
+
 
 
 # Upgrade system and install dependencies.
@@ -61,14 +62,15 @@ fi
 case "${VERSION_DESIRED_MARIADB:-}" in
     "distrib")
         echo "--- --- --- Installing MariaDB from your OS distribution."
+        apt install mariadb-server
         ;;
 
     "latest")
         echo "--- --- --- Installing latest stable MariaDB."
         die "Latest MariaDB verion installation is not yet implemented."
-        apt-key adv --recv-keys --keyserver keyserver.ubuntu.com 0xF1656F24C74CD1D8
-        add-apt-repository 'deb [arch=amd64] http://mariadb.mirror.liquidtelecom.com/repo/10.4/debian buster main'
-        apt-get update && apt-get -y install mariadb-server
+        #apt-key adv --recv-keys --keyserver keyserver.ubuntu.com 0xF1656F24C74CD1D8
+        #add-apt-repository 'deb [arch=amd64] http://mariadb.mirror.liquidtelecom.com/repo/10.4/debian buster main'
+        #apt-get update && apt-get -y install mariadb-server
         ;;
 
     *)
@@ -78,16 +80,19 @@ case "${VERSION_DESIRED_MARIADB:-}" in
 esac
 
 
-exit
-
-
-# run the secure script to set root password, remove test database and disable remote root user login, you can safely accept the defaults and provide an strong root password when prompted
+# Securing MySQL/MariaDB installation.
 mysql_secure_installation
-mysql -u root -p < ${MY_PATH}/sql01.sql # provide previously set password
+
+read -s -p "We need to know MariaDB root's password: " mysql_root_password
+
+mysql --user="root" --password="${mysql_root_password}" < ${MY_PATH}/sql01.sql # provide previously set password
+
 
 # install powerdns and configure db parameters
 apt-get -y install pdns-server pdns-backend-mysql
+
 cp ${MY_PATH}/pdns.local.gmysql.conf /etc/powerdns/pdns.d/
+exit 1
 vi /etc/powerdns/pdns.d/pdns.local.gmysql.conf # db configuration
 
 # install dnsutils for testing, curl and finally PowerDNS-Admin
