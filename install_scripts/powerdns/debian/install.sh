@@ -22,6 +22,10 @@ fi
 
 
 
+# WARNING! EXTREMELY DANGEROUS!!! DO NOT TURN IT ON IN PRODUCTION!!!
+# WARNING! EXTREMELY DANGEROUS!!! DO NOT TURN IT ON IN PRODUCTION!!!
+# WARNING! EXTREMELY DANGEROUS!!! DO NOT TURN IT ON IN PRODUCTION!!!
+# For script's debugging purpose ONLY.
 # 'yes' / anything
 declare -r CLEAR_EXISTING_INSTALL='yes'
 
@@ -29,7 +33,7 @@ declare -r CLEAR_EXISTING_INSTALL='yes'
 declare -r DO_INITIAL_UPDATE='yes'
 
 # 'distrib' / 'latest' / 'none'
-declare -r VERSION_DESIRED_MARIADB='none'
+declare -r VERSION_DESIRED_MARIADB='distrib'
 
 # 'yes' / anything
 declare -r INITIATE_PDNS_DB='yes'
