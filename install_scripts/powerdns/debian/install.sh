@@ -66,6 +66,7 @@ fi
 if [[ "${CLEAR_EXISTING_INSTALL}" == "yes" ]]; then
     echo "(DEBUGGING) Clearing previously installed MariaDB."
     apt purge mariadb-server
+    rm -rf "/etc/mysql" "/var/lib/mysql"
 fi
 
 exit
