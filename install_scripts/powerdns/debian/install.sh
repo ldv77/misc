@@ -47,14 +47,14 @@ fi
 
 # Upgrade system and install dependencies.
 if [[ "${DO_INITIAL_UPDATE:-}" == "yes" ]]; then
-    echo "--- --- --- Doing initial system upgrade."
+    echo -e "\n--- --- --- Doing initial system upgrade."
 
     apt-get update && apt-get -y dist-upgrade
     apt-get -y install software-properties-common dirmngr
     apt-get -y install git python-pip
 
 else
-    echo "--- --- --- Initial system upgrade is prohibited by configuration."
+    echo -e "\n--- --- --- Initial system upgrade is prohibited by configuration."
 
 fi
 
@@ -62,12 +62,12 @@ fi
 # MariaDB installation.
 case "${VERSION_DESIRED_MARIADB:-}" in
     "distrib")
-        echo "--- --- --- Installing MariaDB from your OS distribution."
+        echo -e "\n--- --- --- Installing MariaDB from your OS distribution."
         apt install mariadb-server
         ;;
 
     "latest")
-        echo "--- --- --- Installing latest stable MariaDB."
+        echo -e "\n--- --- --- Installing latest stable MariaDB."
         die "Latest MariaDB verion installation is not yet implemented."
         #apt-key adv --recv-keys --keyserver keyserver.ubuntu.com 0xF1656F24C74CD1D8
         #add-apt-repository 'deb [arch=amd64] http://mariadb.mirror.liquidtelecom.com/repo/10.4/debian buster main'
@@ -84,22 +84,22 @@ esac
 # Securing MySQL/MariaDB installation.
 mysql_secure_installation
 
-echo
+echo -e "\n--- --- --- Gathering info."
 echo "We need to know MariaDB root's password."
 read -s -p "Enter the password: " mysql_root_password
 echo
 
 
 if [[ "${INITIATE_PDNS_DB}" == "yes" ]]; then
-    echo "--- --- --- Initiating PowerDNS database."
+    echo -e "\n--- --- --- Initiating PowerDNS database."
     mysql --user="root" --password="${mysql_root_password}" < ${MY_PATH}/sql01.sql # provide previously set password
 else
-    echo "--- --- --- PowerDNS database initiating is prohibited by configuration."
+    echo -e "\n--- --- --- PowerDNS database initiating is prohibited by configuration."
 fi
 
 
 # install powerdns and configure db parameters
-echo "--- --- --- Installing PowerDNS."
+echo -e "\n--- --- --- Installing PowerDNS."
 apt-get -y install pdns-server pdns-backend-mysql
 
 
@@ -109,7 +109,7 @@ cp "${MY_PATH}/pdns.local.gmysql.conf" "/etc/powerdns/pdns.d/"
 vi "/etc/powerdns/pdns.d/pdns.local.gmysql.conf"
 
 
-
+exit 1
 
 
 # install dnsutils for testing, curl and finally PowerDNS-Admin
