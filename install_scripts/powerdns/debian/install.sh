@@ -22,13 +22,14 @@ fi
 
 
 
-# 'yes'/anything
+# 'yes' / anything
 declare -r DO_INITIAL_UPDATE='yes'
 
 # 'distrib'/'latest'
 declare -r VERSION_DESIRED_MARIADB='distrib'
 
-
+# 'yes' / anything
+declare -r INITIATE_PDNS_DB='yes'
 
 # Are we root?
 if [[ $EUID -ne 0 ]]; then
@@ -88,7 +89,13 @@ echo "We need to know MariaDB root's password."
 read -s -p "Enter the password: " mysql_root_password
 echo
 
-mysql --user="root" --password="${mysql_root_password}" < ${MY_PATH}/sql01.sql # provide previously set password
+
+if [[ "${INITIATE_PDNS_DB}" == "yes" ]]; then
+    echo "--- --- --- Initiating PowerDNS database."
+    mysql --user="root" --password="${mysql_root_password}" < ${MY_PATH}/sql01.sql # provide previously set password
+else
+    echo "--- --- --- PowerDNS database initiating is prohibited by configuration."
+fi
 
 
 # install powerdns and configure db parameters
