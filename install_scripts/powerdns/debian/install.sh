@@ -26,7 +26,7 @@ fi
 declare -r DO_INITIAL_UPDATE='no'
 
 # 'distrib'/'latest'
-declare -r VERSION_DESIRED_MARIADB='distribf'
+declare -r VERSION_DESIRED_MARIADB='distrib'
 
 
 
@@ -60,16 +60,21 @@ fi
 # MariaDB installation.
 case "${VERSION_DESIRED_MARIADB:-}" in
     "distrib")
+        echo "--- --- --- Installing MariaDB from your OS distribution."
         ;;
+
     "latest")
+        echo "--- --- --- Installing latest stable MariaDB."
         die "Latest MariaDB verion installation is not yet implemented."
         apt-key adv --recv-keys --keyserver keyserver.ubuntu.com 0xF1656F24C74CD1D8
         add-apt-repository 'deb [arch=amd64] http://mariadb.mirror.liquidtelecom.com/repo/10.4/debian buster main'
         apt-get update && apt-get -y install mariadb-server
         ;;
+
     *)
         die "Unexpected value of VERSION_DESIRED_MARIADB: \"${VERSION_DESIRED_MARIADB:-}\""
         ;;
+
 esac
 
 
