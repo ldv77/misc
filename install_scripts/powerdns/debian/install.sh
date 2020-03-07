@@ -63,6 +63,13 @@ fi
 
 
 # MariaDB installation.
+if [[ "${CLEAR_EXISTING_INSTALL}" == "yes" ]]; then
+    echo "(DEBUGGING) Clearing previously installed MariaDB."
+    apt purge mariadb-server
+fi
+
+exit
+
 case "${VERSION_DESIRED_MARIADB:-}" in
     "distrib")
         echo -e "\n--- --- --- Installing MariaDB from your OS distribution."
