@@ -23,7 +23,7 @@ fi
 
 
 # 'yes'/anything
-declare -r DO_INITIAL_UPDATE='no'
+declare -r DO_INITIAL_UPDATE='yes'
 
 # 'distrib'/'latest'
 declare -r VERSION_DESIRED_MARIADB='distrib'
@@ -93,7 +93,13 @@ apt-get -y install pdns-server pdns-backend-mysql
 
 cp ${MY_PATH}/pdns.local.gmysql.conf /etc/powerdns/pdns.d/
 exit 1
+
+
 vi /etc/powerdns/pdns.d/pdns.local.gmysql.conf # db configuration
+
+
+
+
 
 # install dnsutils for testing, curl and finally PowerDNS-Admin
 apt-get -y install python3-dev dnsutils curl
