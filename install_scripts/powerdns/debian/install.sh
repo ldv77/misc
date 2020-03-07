@@ -21,6 +21,7 @@ if [[ ${BASH_MAJOR_VERSION} -lt 4 ]]; then
 fi
 
 
+
 # 'yes'/anything
 declare -r DO_INITIAL_UPDATE='yes'
 
@@ -28,7 +29,15 @@ declare -r DO_INITIAL_UPDATE='yes'
 declare -r VERSION_DESIRED_MARIADB='distrib'
 
 
-# get script absolute path
+
+# Are we root?
+if [[ $EUID -ne 0 ]]; then
+    die "Current job is configured to run under 'root' credentials. Use 'sudo' or something."
+else
+    log "Runtime credentials check OK." 50
+fi
+
+# Get script absolute path.
 MY_PATH="`dirname \"$0\"`"
 MY_PATH="`( cd \"$MY_PATH\" && pwd )`"
 if [ -z "$MY_PATH" ] ; then
@@ -36,10 +45,20 @@ if [ -z "$MY_PATH" ] ; then
 fi
 
 
-# upgrade system and install dependencies
-apt-get update && apt-get -y upgrade
-apt-get -y install software-properties-common dirmngr
-apt-get -y install git python-pip
+# Upgrade system and install dependencies.
+if [[ "${DO_INITIAL_UPDATE}" == "yes" ]]; then
+    echo "--- --- --- Doing initial system upgrade."
+
+    apt-get update && apt-get -y dist-upgrade
+    apt-get -y install software-properties-common dirmngr
+    apt-get -y install git python-pip
+
+else
+    echo "--- --- --- Initial system upgrade is prohibited by configuration."
+
+fi
+
+exit
 
 # install and prepare last stable mariadb version
 apt-key adv --recv-keys --keyserver keyserver.ubuntu.com 0xF1656F24C74CD1D8
