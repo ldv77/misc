@@ -244,7 +244,8 @@ systemctl status powerdns-admin
 
 echo -e "\n--- --- --- Configuring nginx site."
 apt-get -y install nginx
-cp "${MY_PATH}/powerdns-admin.conf" "/etc/nginx/sites-enabled/"
+cp "${MY_PATH}/etc/nginx/sites-available/powerdns-admin.conf" "/etc/nginx/sites-available/"
+ln -s "/etc/nginx/sites-available/powerdns-admin.conf" "/etc/nginx/sites-enabled/powerdns-admin"
 chown -R pdns:pdns "${PDA_DIR}/powerdnsadmin/static/"
 nginx -t && systemctl restart nginx
 
