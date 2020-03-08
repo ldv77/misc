@@ -103,9 +103,29 @@ if [[ "${INITIATE_PDNS_DB:-}" == "yes" ]]; then
 
     if [[ "${CLEAR_EXISTING_INSTALL}" == "yes" ]]; then
         echo "(DEBUGGING) Clearing previously configured DB."
+
+        echo "DROP USER IF EXISTS ${PDNS_DB_USER};" \
+            | mysql --host="${PDNS_DB_HOST}" --user="${MYSQL_ADMIN_USER}" --password="${MYSQL_ADMIN_PASSWD}"
+
         echo "DROP DATABASE IF EXISTS ${PDNS_DB_NAME};" \
             | mysql --host="${PDNS_DB_HOST}" --user="${MYSQL_ADMIN_USER}" --password="${MYSQL_ADMIN_PASSWD}"
+
     fi
+
+    echo "CREATE DATABASE ${PDNS_DB_NAME} CHARACTER SET utf8 COLLATE utf8_general_ci;" \
+        | mysql --host="${PDNS_DB_HOST}" --user="${MYSQL_ADMIN_USER}" --password="${MYSQL_ADMIN_PASSWD}"
+
+    echo "CREATE USER '${PDNS_DB_USER}'@'${PDNS_DB_USERFROM}';" \
+        | mysql --host="${PDNS_DB_HOST}" --user="${MYSQL_ADMIN_USER}" --password="${MYSQL_ADMIN_PASSWD}"
+
+    echo "SET PASSWORD FOR '${PDNS_DB_USER}'@'${PDNS_DB_USERFROM}' = PASSWORD('${PDNS_DB_PASSWD}');" \
+        | mysql --host="${PDNS_DB_HOST}" --user="${MYSQL_ADMIN_USER}" --password="${MYSQL_ADMIN_PASSWD}"
+
+    echo "GRANT ALL PRIVILEGES ON ${PDNS_DB_NAME}.* TO '${PDNS_DB_USER}'@'${PDNS_DB_USERFROM}';" \
+        | mysql --host="${PDNS_DB_HOST}" --user="${MYSQL_ADMIN_USER}" --password="${MYSQL_ADMIN_PASSWD}"
+
+    echo "FLUSH PRIVILEGES;" \
+        | mysql --host="${PDNS_DB_HOST}" --user="${MYSQL_ADMIN_USER}" --password="${MYSQL_ADMIN_PASSWD}"
 
     pv "${MY_PATH}/sql01.sql" | mysql --host="${PDNS_DB_HOST}" --user="${MYSQL_ADMIN_USER}" --password="${MYSQL_ADMIN_PASSWD}"
 
@@ -161,6 +181,10 @@ if [[ "${INITIATE_PDA_DB:-}" == "yes" ]]; then
 
     if [[ "${CLEAR_EXISTING_INSTALL}" == "yes" ]]; then
         echo "(DEBUGGING) Clearing previously configured DB."
+
+        echo "DROP USER IF EXISTS ${PDA_DB_USER};" \
+            | mysql --host="${PDA_DB_HOST}" --user="${MYSQL_ADMIN_USER}" --password="${MYSQL_ADMIN_PASSWD}"
+
         echo "DROP DATABASE IF EXISTS ${PDA_DB_NAME};" \
             | mysql --host="${PDA_DB_HOST}" --user="${MYSQL_ADMIN_USER}" --password="${MYSQL_ADMIN_PASSWD}"
     fi
@@ -170,7 +194,7 @@ if [[ "${INITIATE_PDA_DB:-}" == "yes" ]]; then
     echo "CREATE DATABASE ${PDA_DB_NAME} CHARACTER SET utf8 COLLATE utf8_general_ci;" \
         | mysql --host="${PDA_DB_HOST}" --user="${MYSQL_ADMIN_USER}" --password="${MYSQL_ADMIN_PASSWD}"
 
-    echo "CREATE USER IF NOT EXISTS '${PDA_DB_USER}'@'${PDA_DB_USERFROM}';" \
+    echo "CREATE USER '${PDA_DB_USER}'@'${PDA_DB_USERFROM}';" \
         | mysql --host="${PDA_DB_HOST}" --user="${MYSQL_ADMIN_USER}" --password="${MYSQL_ADMIN_PASSWD}"
 
     echo "SET PASSWORD FOR '${PDA_DB_USER}'@'${PDA_DB_USERFROM}' = PASSWORD('${PDA_DB_PASSWD}');" \
@@ -233,10 +257,8 @@ chown -R pdns:pdns "/opt/web/powerdns-admin/powerdnsadmin/static/"
 nginx -t && systemctl restart nginx
 
 echo -e "\n--- --- --- Configuring PowerDNS API ."
-echo "We need to know PowerDNS API key."
-read -s -p "Enter the API key string: " pdns_api_key
 echo 'api=yes' >> '/etc/powerdns/pdns.conf'
-echo "api-key=${pdns_api_key}" >> '/etc/powerdns/pdns.conf'
+echo "api-key=${PDNS_API_KEY}" >> '/etc/powerdns/pdns.conf'
 echo 'webserver=yes' >> '/etc/powerdns/pdns.conf'
 echo "webserver-address=0.0.0.0" >> '/etc/powerdns/pdns.conf'
 echo 'webserver-allow-from=0.0.0.0/0,::/0' >> '/etc/powerdns/pdns.conf'
@@ -246,6 +268,7 @@ echo -e "\n--- --- --- Restarting \"pdns\" service."
 systemctl enable pdns
 systemctl restart pdns
 systemctl status pdns
+
 # now go to server_name url and create a firt user account that will be admin
 # log in
 # configure api access on powerdns-admin

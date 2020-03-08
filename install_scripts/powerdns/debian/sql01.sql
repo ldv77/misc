@@ -1,8 +1,3 @@
-CREATE DATABASE pdns;
-GRANT ALL ON pdns.* TO 'pdnsuser'@'localhost' IDENTIFIED BY 'mypassword';
-FLUSH PRIVILEGES;
-USE pdns;
-
 CREATE TABLE domains (
   id                    INT AUTO_INCREMENT,
   name                  VARCHAR(255) NOT NULL,

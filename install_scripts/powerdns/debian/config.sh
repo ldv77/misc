@@ -14,6 +14,8 @@ declare -g -r DO_INITIAL_UPDATE='yes'
 declare -g -r VERSION_DESIRED_MARIADB='distrib'
 
 
+declare -g -r PDNS_API_KEY='CHANGEMECHANGEMECHANGEME'
+
 declare -g -r PDA_DIR='/opt/web/powerdns-admin'
 
 
