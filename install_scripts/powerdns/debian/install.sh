@@ -170,7 +170,7 @@ if [[ "${INITIATE_PDA_DB:-}" == "yes" ]]; then
     echo "CREATE DATABASE ${PDA_DB_NAME} CHARACTER SET utf8 COLLATE utf8_general_ci;" \
         | mysql --host="${PDA_DB_HOST}" --user="${MYSQL_ADMIN_USER}" --password="${MYSQL_ADMIN_PASSWD}"
 
-    echo "CREATE USER '${PDA_DB_USER}'@'${PDA_DB_USERFROM}';" \
+    echo "CREATE USER IF NOT EXISTS '${PDA_DB_USER}'@'${PDA_DB_USERFROM}';" \
         | mysql --host="${PDA_DB_HOST}" --user="${MYSQL_ADMIN_USER}" --password="${MYSQL_ADMIN_PASSWD}"
 
     echo "SET PASSWORD FOR '${PDA_DB_USER}'@'${PDA_DB_USERFROM}' = PASSWORD('${PDA_DB_PASSWD}');" \
