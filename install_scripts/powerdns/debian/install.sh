@@ -140,7 +140,7 @@ echo -e "\n--- --- --- Installing PowerDNS."
 apt-get -y install pdns-server pdns-backend-mysql
 
 
-cp "${MY_PATH}/pdns.local.gmysql.conf" "/etc/powerdns/pdns.d/"
+cp "${MY_PATH}/etc/powerdns/pdns.d/pdns.local.gmysql.conf" "/etc/powerdns/pdns.d/"
 
 
 echo -e "\n--- --- --- Installing dnsutils for testing, curl and finally PowerDNS-Admin."
@@ -209,23 +209,10 @@ else
 
 fi
 
-
-
-
-
-
-
-vi "powerdnsadmin/default_config.py"
+cp "${MY_PATH}/opt/web/powerdns-admin/powerdnsadmin/default_config.py" "${PDA_DIR}/powerdnsadmin/default_config.py"
 export FLASK_APP=powerdnsadmin/__init__.py
 flask db upgrade
 flask db migrate -m "Init DB"
-
-
-
-
-
-
-
 
 
 echo -e "\n--- --- --- Installing nodejs/yarn."
@@ -247,7 +234,7 @@ mkdir -p "${PDA_RUNTIME_DIR}"
 chown pdns:pdns "${PDA_RUNTIME_DIR}"
 
 
-cp "${MY_PATH}/powerdns-admin.service" "/etc/systemd/system/"
+cp "${MY_PATH}/etc/systemd/system/powerdns-admin.service" "/etc/systemd/system/"
 systemctl daemon-reload
 
 echo -e "\n--- --- --- Starting \"powerdns-admin\" service."
