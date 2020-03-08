@@ -97,12 +97,7 @@ case "${VERSION_DESIRED_MARIADB:-}" in
 esac
 
 
-echo -e "\n--- --- --- Gathering info."
-echo "We need to know MariaDB root's password."
-read -s -p "Enter the password: " mysql_root_password
-echo
-
-
+# PowerDNS database.
 if [[ "${INITIATE_PDNS_DB:-}" == "yes" ]]; then
     echo -e "\n--- --- --- Initiating PowerDNS database."
 
