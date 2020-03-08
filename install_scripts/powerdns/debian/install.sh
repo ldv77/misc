@@ -50,6 +50,7 @@ fi
 declare -r MY_PATH=$(cd "$( dirname "${BASH_SOURCE[0]}")" && pwd ) || die "Can't get script directory."
 
 # Get task configuration.
+echo "${MY_PATH}/config.sh"
 src "${MY_PATH}/config.sh" "Task configuration"
 
 # TODO Check if empty vars.
