@@ -261,7 +261,7 @@ cp "${MY_PATH}/powerdns-admin.conf" "/etc/nginx/sites-enabled/"
 chown -R pdns:pdns "${PDA_DIR}/powerdnsadmin/static/"
 nginx -t && systemctl restart nginx
 
-echo -e "\n--- --- --- Configuring PowerDNS API ."
+echo -e "\n--- --- --- Configuring PowerDNS API."
 echo 'api=yes' >> '/etc/powerdns/pdns.conf'
 echo "api-key=${PDNS_API_KEY}" >> '/etc/powerdns/pdns.conf'
 echo 'webserver=yes' >> '/etc/powerdns/pdns.conf'
@@ -273,6 +273,8 @@ echo -e "\n--- --- --- Restarting \"pdns\" service."
 systemctl enable pdns
 systemctl restart pdns
 systemctl status pdns
+
+echo "All done."
 
 # now go to server_name url and create a firt user account that will be admin
 # log in
