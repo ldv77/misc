@@ -176,7 +176,7 @@ if [[ "${INITIATE_PDA_DB:-}" == "yes" ]]; then
     echo "SET PASSWORD FOR '${PDA_DB_USER}'@'${PDA_DB_USERFROM}' = PASSWORD('${PDA_DB_PASSWD}');" \
         | mysql --host="${PDA_DB_HOST}" --user="${MYSQL_ADMIN_USER}" --password="${MYSQL_ADMIN_PASSWD}"
 
-    echo "GRANT ALL PRIVILEGES ON ${PDA_DBNAME}.* TO '${PDA_DB_USER}'@'${PDA_DB_USERFROM}';" \
+    echo "GRANT ALL PRIVILEGES ON ${PDA_DB_NAME}.* TO '${PDA_DB_USER}'@'${PDA_DB_USERFROM}';" \
         | mysql --host="${PDA_DB_HOST}" --user="${MYSQL_ADMIN_USER}" --password="${MYSQL_ADMIN_PASSWD}"
 
     echo "FLUSH PRIVILEGES;" \
