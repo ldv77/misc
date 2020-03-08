@@ -50,7 +50,6 @@ fi
 declare -r MY_PATH=$(cd "$( dirname "${BASH_SOURCE[0]}")" && pwd ) || die "Can't get script directory."
 
 # Get task configuration.
-echo "${MY_PATH}/config.sh"
 src "${MY_PATH}/config.sh" "Task configuration"
 
 # TODO Check if empty vars.
@@ -116,15 +115,12 @@ else
 fi
 
 
-# install powerdns and configure db parameters
+# Install PowerDNS and configure DB parameters.
 echo -e "\n--- --- --- Installing PowerDNS."
 apt-get -y install pdns-server pdns-backend-mysql
 
 
 cp "${MY_PATH}/pdns.local.gmysql.conf" "/etc/powerdns/pdns.d/"
-
-# PowerDNS DB configuration here.
-vi "/etc/powerdns/pdns.d/pdns.local.gmysql.conf"
 
 
 echo -e "\n--- --- --- Installing dnsutils for testing, curl and finally PowerDNS-Admin."
@@ -139,10 +135,17 @@ apt-get -y install apt-transport-https
 apt-get update 
 apt-get -y install yarn
 
-echo -e "\n--- --- --- Cloning PowerDNS-Admin itself."
-git clone https://github.com/ngoduykhanh/PowerDNS-Admin.git /opt/web/powerdns-admin
 
-cd "/opt/web/powerdns-admin"
+echo -e "\n--- --- --- Cloning PowerDNS-Admin itself."
+
+if [[ "${CLEAR_EXISTING_INSTALL}" == "yes" ]]; then
+        echo "(DEBUGGING) Clearing previously cloned \"${PDA_DIR}\"."
+        rm -rf "${PDA_DIR}"
+    fi
+
+git clone "https://github.com/ngoduykhanh/PowerDNS-Admin.git" "${PDA_DIR}/"
+
+cd "${PDA_DIR}/"
 
 echo -e "\n--- --- --- Creating virtual environment for flask?"
 pip install virtualenv

@@ -13,6 +13,10 @@ declare -g -r DO_INITIAL_UPDATE='yes'
 # 'distrib' / 'latest' / 'none'
 declare -g -r VERSION_DESIRED_MARIADB='distrib'
 
+
+declare -g -r PDA_DIR='/opt/web/powerdns-admin'
+
+
 # 'yes' / anything
 declare -g -r INITIATE_PDNS_DB='yes'
 
@@ -23,13 +27,13 @@ declare -g -r MYSQL_ADMIN_USER='root'
 declare -g -r MYSQL_ADMIN_PASSWD='CHANGEMECHANGEMECHANGEME'
 
 declare -g -r PDNS_DB_NAME='powerdns'
-declare -g -r PDNS_DB_HOST='127.0.0.1'
+declare -g -r PDNS_DB_HOST='localhost'
 declare -g -r PDNS_DB_USER='pdnsuser'
 declare -g -r PDNS_DB_PASSWD='CHANGEMECHANGEMECHANGEME'
 declare -g -r PDNS_DB_USERFROM='127.0.0.1'
 
 declare -g -r PDA_DB_NAME='pdnsadmin'
-declare -g -r PDA_DB_HOST='127.0.0.1'
+declare -g -r PDA_DB_HOST='localhost'
 declare -g -r PDA_DB_USER='pdnsadminuser'
 declare -g -r PDA_DB_PASSWD='CHANGEMECHANGEMECHANGEME'
 declare -g -r PDA_DB_USERFROM='127.0.0.1'
