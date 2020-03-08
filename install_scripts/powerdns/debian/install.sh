@@ -125,55 +125,78 @@ cp "${MY_PATH}/pdns.local.gmysql.conf" "/etc/powerdns/pdns.d/"
 vi "/etc/powerdns/pdns.d/pdns.local.gmysql.conf"
 
 
-exit
-
-
-# install dnsutils for testing, curl and finally PowerDNS-Admin
+echo -e "\n--- --- --- Installing dnsutils for testing, curl and finally PowerDNS-Admin."
 apt-get -y install python3-dev dnsutils curl
 apt-get -y install -y default-libmysqlclient-dev python-mysqldb libsasl2-dev libffi-dev libldap2-dev libssl-dev libxml2-dev libxslt1-dev libxmlsec1-dev pkg-config
+
 curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
 echo 'deb https://dl.yarnpkg.com/debian/ stable main' > /etc/apt/sources.list.d/yarn.list
-apt-get -y install apt-transport-https # needed for https repo
+
+# needed for https repo
+apt-get -y install apt-transport-https
 apt-get update 
 apt-get -y install yarn
+
+echo -e "\n--- --- --- Cloning PowerDNS-Admin itself."
 git clone https://github.com/ngoduykhanh/PowerDNS-Admin.git /opt/web/powerdns-admin
+
 cd /opt/web/powerdns-admin
+
+echo -e "\n--- --- --- Creating virtual environment for flask?"
 pip install virtualenv
 virtualenv -p python3 flask
 . ./flask/bin/activate
+
+echo -e "\n--- --- --- Installing dependencies via pip."
 pip install -r requirements.txt
-mysql -u root -p < ${MY_PATH}/sql02.sql
-vi powerdnsadmin/default_config.py
+
+echo -e "\n--- --- --- Setting up PowerDNS-Admin database."
+pv "${MY_PATH}/sql02.sql" | mysql --user="root" --password="${mysql_root_password}"
+vi "powerdnsadmin/default_config.py"
 export FLASK_APP=powerdnsadmin/__init__.py
 flask db upgrade
 flask db migrate -m "Init DB"
 
-# install/update nodejs, needed to use yarn
+echo -e "\n--- --- --- Installing nodejs/yarn."
 curl -sL https://deb.nodesource.com/setup_12.x | bash -
 apt-get install -y nodejs
 yarn install --pure-lockfile
+
+echo -e "\n--- --- --- Building assets with flask."
 flask assets build
 
-# create systemd service file and activate it
-mkdir /run/powerdns-admin
+echo -e "\n--- --- --- Making systemd unit."
+mkdir "/run/powerdns-admin"
 chown pdns:pdns /run/powerdns-admin
-cp ${MY_PATH}/powerdns-admin.service /etc/systemd/system/
+
+cp "${MY_PATH}/powerdns-admin.service" "/etc/systemd/system/"
 systemctl daemon-reload
-systemctl start powerdns-admin
+
+echo -e "\n--- --- --- Starting \"powerdns-admin\" service."
 systemctl enable powerdns-admin
-# install nginx and configure site
+systemctl start powerdns-admin
+systemctl status powerdns-admin
+
+echo -e "\n--- --- --- Configuring nginx site."
 apt-get -y install nginx
-cp ${MY_PATH}/powerdns-admin.conf /etc/nginx/sites-enabled/
-chown -R pdns:pdns /opt/web/powerdns-admin/powerdnsadmin/static/
-nginx -t && service nginx restart
-# activate powerdns api, change api-key if needed
-echo 'api=yes' >> /etc/powerdns/pdns.conf
-echo 'api-key=789456123741852963' >> /etc/powerdns/pdns.conf
-echo 'webserver=yes' >> /etc/powerdns/pdns.conf
-echo 'webserver-address=0.0.0.0' >> /etc/powerdns/pdns.conf
-echo 'webserver-allow-from=0.0.0.0/0,::/0' >> /etc/powerdns/pdns.conf
-echo 'webserver-port=8081' >> /etc/powerdns/pdns.conf
-service pdns restart
+cp "${MY_PATH}/powerdns-admin.conf" "/etc/nginx/sites-enabled/"
+chown -R pdns:pdns "/opt/web/powerdns-admin/powerdnsadmin/static/"
+nginx -t && systemctl restart nginx
+
+echo -e "\n--- --- --- Configuring PowerDNS API ."
+echo "We need to know PowerDNS API key."
+read -s -p "Enter the API key string: " pdns_api_key
+echo 'api=yes' >> '/etc/powerdns/pdns.conf'
+echo "api-key=${pdns_api_key}" >> '/etc/powerdns/pdns.conf'
+echo 'webserver=yes' >> '/etc/powerdns/pdns.conf'
+echo "webserver-address=0.0.0.0" >> '/etc/powerdns/pdns.conf'
+echo 'webserver-allow-from=0.0.0.0/0,::/0' >> '/etc/powerdns/pdns.conf'
+echo 'webserver-port=8081' >> '/etc/powerdns/pdns.conf'
+
+echo -e "\n--- --- --- Restarting \"pdns\" service."
+systemctl enable pdns
+systemctl restart pdns
+systemctl status pdns
 # now go to server_name url and create a firt user account that will be admin
 # log in
 # configure api access on powerdns-admin
