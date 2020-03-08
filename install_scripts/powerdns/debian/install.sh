@@ -104,7 +104,7 @@ if [[ "${INITIATE_PDNS_DB:-}" == "yes" ]]; then
     if [[ "${CLEAR_EXISTING_INSTALL}" == "yes" ]]; then
         echo "(DEBUGGING) Clearing previously configured DB."
 
-        echo "DROP USER IF EXISTS ${PDNS_DB_USER};" \
+        echo "DROP USER IF EXISTS '${PDNS_DB_USER}'@'${PDNS_DB_USERFROM}';" \
             | mysql --host="${PDNS_DB_HOST}" --user="${MYSQL_ADMIN_USER}" --password="${MYSQL_ADMIN_PASSWD}"
 
         echo "DROP DATABASE IF EXISTS ${PDNS_DB_NAME};" \
@@ -182,7 +182,7 @@ if [[ "${INITIATE_PDA_DB:-}" == "yes" ]]; then
     if [[ "${CLEAR_EXISTING_INSTALL}" == "yes" ]]; then
         echo "(DEBUGGING) Clearing previously configured DB."
 
-        echo "DROP USER IF EXISTS ${PDA_DB_USER};" \
+        echo "DROP USER IF EXISTS '${PDA_DB_USER}'@'${PDA_DB_USERFROM}';" \
             | mysql --host="${PDA_DB_HOST}" --user="${MYSQL_ADMIN_USER}" --password="${MYSQL_ADMIN_PASSWD}"
 
         echo "DROP DATABASE IF EXISTS ${PDA_DB_NAME};" \
