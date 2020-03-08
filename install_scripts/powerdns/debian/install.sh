@@ -14,29 +14,32 @@ die() {
 }
 
 
+src () {
+    # Let's enhance 'source' functionality slightly.
+    if [[ $# -ne 2 ]]; then
+        die "Unexpected number of arguments."
+    else
+        local f_inc_file_name="$1"
+        local f_inc_file_desc="$2"
+
+        if [[ ! -f "${f_inc_file_name}" ]]; then
+            die "Error: Unable to stat ${f_inc_file_desc} as regular file at \"${f_inc_file_name}\""
+        elif [[ ! -r "${f_inc_file_name}" ]]; then
+            die "Error: Unable to read ${f_inc_file_desc} at \"${f_inc_file_name}\""
+        else
+            source "${f_inc_file_name}" \
+                || die "Error: unable to load \"${f_inc_file_name}\" as ${f_inc_file_desc}."
+        fi
+    fi
+}
+
+
+# Is our shell fresh enough?
 BASH_MAJOR_VERSION=$(echo "${BASH_VERSION}" | cut --delimiter='.' --fields=1) \
     || die "Unable to get bash major version."
 if [[ ${BASH_MAJOR_VERSION} -lt 4 ]]; then
     die "Shell is too old: bash version 4 or newer is required."
 fi
-
-
-
-# WARNING! EXTREMELY DANGEROUS!!! DO NOT TURN IT ON IN PRODUCTION!!!
-# WARNING! EXTREMELY DANGEROUS!!! DO NOT TURN IT ON IN PRODUCTION!!!
-# WARNING! EXTREMELY DANGEROUS!!! DO NOT TURN IT ON IN PRODUCTION!!!
-# For script's debugging purpose ONLY.
-# 'yes' / anything
-declare -r CLEAR_EXISTING_INSTALL='yes'
-
-# 'yes' / anything
-declare -r DO_INITIAL_UPDATE='yes'
-
-# 'distrib' / 'latest' / 'none'
-declare -r VERSION_DESIRED_MARIADB='distrib'
-
-# 'yes' / anything
-declare -r INITIATE_PDNS_DB='yes'
 
 # Are we root?
 if [[ $EUID -ne 0 ]]; then
@@ -44,12 +47,12 @@ if [[ $EUID -ne 0 ]]; then
 fi
 
 # Get script absolute path.
-MY_PATH="`dirname \"$0\"`"
-MY_PATH="`( cd \"$MY_PATH\" && pwd )`"
-if [ -z "$MY_PATH" ] ; then
-	  die "Unable to get MY_PATH."
-fi
+declare -r MY_PATH=$(cd "$( dirname "${BASH_SOURCE[0]}")" && pwd ) || die "Can't get script directory."
 
+# Get task configuration.
+src "${MY_PATH}/config.sh" "Task configuration"
+
+# TODO Check if empty vars.
 
 
 # Upgrade system and install dependencies.
@@ -105,12 +108,15 @@ if [[ "${INITIATE_PDNS_DB:-}" == "yes" ]]; then
 
     if [[ "${CLEAR_EXISTING_INSTALL}" == "yes" ]]; then
         echo "(DEBUGGING) Clearing previously configured DB."
-        echo "DROP DATABASE IF EXISTS powerdns;" | mysql --user="root" --password="${mysql_root_password}"
+        echo "DROP DATABASE IF EXISTS ${PDNS_DB_NAME};" \
+            | mysql --host="${PDNS_DB_HOST}" --user="${MYSQL_ADMIN_USER}" --password="${MYSQL_ADMIN_PASSWD}"
     fi
 
-    pv "${MY_PATH}/sql01.sql" | mysql --user="root" --password="${mysql_root_password}"
+    pv "${MY_PATH}/sql01.sql" | mysql --host="${PDNS_DB_HOST}" --user="${MYSQL_ADMIN_USER}" --password="${MYSQL_ADMIN_PASSWD}"
+
 else
     echo -e "\n--- --- --- PowerDNS database initiating is prohibited by configuration."
+
 fi
 
 
@@ -140,7 +146,7 @@ apt-get -y install yarn
 echo -e "\n--- --- --- Cloning PowerDNS-Admin itself."
 git clone https://github.com/ngoduykhanh/PowerDNS-Admin.git /opt/web/powerdns-admin
 
-cd /opt/web/powerdns-admin
+cd "/opt/web/powerdns-admin"
 
 echo -e "\n--- --- --- Creating virtual environment for flask?"
 pip install virtualenv
@@ -150,12 +156,56 @@ virtualenv -p python3 flask
 echo -e "\n--- --- --- Installing dependencies via pip."
 pip install -r requirements.txt
 
-echo -e "\n--- --- --- Setting up PowerDNS-Admin database."
-pv "${MY_PATH}/sql02.sql" | mysql --user="root" --password="${mysql_root_password}"
+
+if [[ "${INITIATE_PDA_DB:-}" == "yes" ]]; then
+    echo -e "\n--- --- --- Setting up PowerDNS-Admin database."
+
+    if [[ "${CLEAR_EXISTING_INSTALL}" == "yes" ]]; then
+        echo "(DEBUGGING) Clearing previously configured DB."
+        echo "DROP DATABASE IF EXISTS ${PDA_DB_NAME};" \
+            | mysql --host="${PDA_DB_HOST}" --user="${MYSQL_ADMIN_USER}" --password="${MYSQL_ADMIN_PASSWD}"
+    fi
+
+    ###pv "${MY_PATH}/sql02.sql" | mysql --user="root" --password="${mysql_root_password}"
+
+    echo "CREATE DATABASE ${PDA_DB_NAME} CHARACTER SET utf8 COLLATE utf8_general_ci;" \
+        | mysql --host="${PDA_DB_HOST}" --user="${MYSQL_ADMIN_USER}" --password="${MYSQL_ADMIN_PASSWD}"
+
+    echo "CREATE USER '${PDA_DB_USER}'@'${PDA_DB_USERFROM}';" \
+        | mysql --host="${PDA_DB_HOST}" --user="${MYSQL_ADMIN_USER}" --password="${MYSQL_ADMIN_PASSWD}"
+
+    echo "SET PASSWORD FOR '${PDA_DB_USER}'@'${PDA_DB_USERFROM}' = PASSWORD('${PDA_DB_PASSWD}');" \
+        | mysql --host="${PDA_DB_HOST}" --user="${MYSQL_ADMIN_USER}" --password="${MYSQL_ADMIN_PASSWD}"
+
+    echo "GRANT ALL PRIVILEGES ON ${PDA_DBNAME}.* TO '${PDA_DB_USER}'@'${PDA_DB_USERFROM}';" \
+        | mysql --host="${PDA_DB_HOST}" --user="${MYSQL_ADMIN_USER}" --password="${MYSQL_ADMIN_PASSWD}"
+
+    echo "FLUSH PRIVILEGES;" \
+        | mysql --host="${PDA_DB_HOST}" --user="${MYSQL_ADMIN_USER}" --password="${MYSQL_ADMIN_PASSWD}"
+
+else
+    echo -e "\n--- --- --- PowerDNS-Admin database setting up is prohibited by configuration."
+
+fi
+
+
+
+
+
+
+
 vi "powerdnsadmin/default_config.py"
 export FLASK_APP=powerdnsadmin/__init__.py
 flask db upgrade
 flask db migrate -m "Init DB"
+
+
+
+
+
+
+
+
 
 echo -e "\n--- --- --- Installing nodejs/yarn."
 curl -sL https://deb.nodesource.com/setup_12.x | bash -
