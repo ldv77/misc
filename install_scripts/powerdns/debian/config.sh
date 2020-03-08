@@ -17,6 +17,7 @@ declare -g -r VERSION_DESIRED_MARIADB='distrib'
 declare -g -r PDNS_API_KEY='CHANGEMECHANGEMECHANGEME'
 
 declare -g -r PDA_DIR='/opt/web/powerdns-admin'
+declare -g -r PDA_RUNTIME_DIR='/run/powerdns-admin'
 
 
 # 'yes' / anything

@@ -101,7 +101,7 @@ esac
 if [[ "${INITIATE_PDNS_DB:-}" == "yes" ]]; then
     echo -e "\n--- --- --- Initiating PowerDNS database."
 
-    if [[ "${CLEAR_EXISTING_INSTALL}" == "yes" ]]; then
+    if [[ "${CLEAR_EXISTING_INSTALL:-}" == "yes" ]]; then
         echo "(DEBUGGING) Clearing previously configured DB."
 
         echo "DROP USER IF EXISTS '${PDNS_DB_USER}'@'${PDNS_DB_USERFROM}';" \
@@ -158,10 +158,10 @@ apt-get -y install yarn
 
 echo -e "\n--- --- --- Cloning PowerDNS-Admin itself."
 
-if [[ "${CLEAR_EXISTING_INSTALL}" == "yes" ]]; then
-        echo "(DEBUGGING) Clearing previously cloned \"${PDA_DIR}\"."
-        rm -rf "${PDA_DIR}"
-    fi
+if [[ "${CLEAR_EXISTING_INSTALL:-}" == "yes" ]]; then
+    echo "(DEBUGGING) Clearing previously cloned \"${PDA_DIR}\"."
+    rm -rf "${PDA_DIR}"
+fi
 
 git clone "https://github.com/ngoduykhanh/PowerDNS-Admin.git" "${PDA_DIR}/"
 
@@ -179,7 +179,7 @@ pip install -r requirements.txt
 if [[ "${INITIATE_PDA_DB:-}" == "yes" ]]; then
     echo -e "\n--- --- --- Setting up PowerDNS-Admin database."
 
-    if [[ "${CLEAR_EXISTING_INSTALL}" == "yes" ]]; then
+    if [[ "${CLEAR_EXISTING_INSTALL:-}" == "yes" ]]; then
         echo "(DEBUGGING) Clearing previously configured DB."
 
         echo "DROP USER IF EXISTS '${PDA_DB_USER}'@'${PDA_DB_USERFROM}';" \
@@ -188,8 +188,6 @@ if [[ "${INITIATE_PDA_DB:-}" == "yes" ]]; then
         echo "DROP DATABASE IF EXISTS ${PDA_DB_NAME};" \
             | mysql --host="${PDA_DB_HOST}" --user="${MYSQL_ADMIN_USER}" --password="${MYSQL_ADMIN_PASSWD}"
     fi
-
-    ###pv "${MY_PATH}/sql02.sql" | mysql --user="root" --password="${mysql_root_password}"
 
     echo "CREATE DATABASE ${PDA_DB_NAME} CHARACTER SET utf8 COLLATE utf8_general_ci;" \
         | mysql --host="${PDA_DB_HOST}" --user="${MYSQL_ADMIN_USER}" --password="${MYSQL_ADMIN_PASSWD}"
@@ -238,9 +236,16 @@ yarn install --pure-lockfile
 echo -e "\n--- --- --- Building assets with flask."
 flask assets build
 
+
 echo -e "\n--- --- --- Making systemd unit."
-mkdir "/run/powerdns-admin"
-chown pdns:pdns /run/powerdns-admin
+if [[ "${CLEAR_EXISTING_INSTALL:-}" == "yes" ]]; then
+    echo "(DEBUGGING) Clearing previously created unit runtime dir."
+    rm -rf "${PDA_RUNTIME_DIR}"
+fi
+
+mkdir -p "${PDA_RUNTIME_DIR}"
+chown pdns:pdns "${PDA_RUNTIME_DIR}"
+
 
 cp "${MY_PATH}/powerdns-admin.service" "/etc/systemd/system/"
 systemctl daemon-reload
@@ -253,7 +258,7 @@ systemctl status powerdns-admin
 echo -e "\n--- --- --- Configuring nginx site."
 apt-get -y install nginx
 cp "${MY_PATH}/powerdns-admin.conf" "/etc/nginx/sites-enabled/"
-chown -R pdns:pdns "/opt/web/powerdns-admin/powerdnsadmin/static/"
+chown -R pdns:pdns "${PDA_DIR}/powerdnsadmin/static/"
 nginx -t && systemctl restart nginx
 
 echo -e "\n--- --- --- Configuring PowerDNS API ."
