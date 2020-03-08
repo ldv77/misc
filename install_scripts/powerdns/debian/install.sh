@@ -127,7 +127,7 @@ if [[ "${INITIATE_PDNS_DB:-}" == "yes" ]]; then
     echo "FLUSH PRIVILEGES;" \
         | mysql --host="${PDNS_DB_HOST}" --user="${MYSQL_ADMIN_USER}" --password="${MYSQL_ADMIN_PASSWD}"
 
-    pv "${MY_PATH}/sql01.sql" | mysql --host="${PDNS_DB_HOST}" --user="${MYSQL_ADMIN_USER}" --password="${MYSQL_ADMIN_PASSWD}"
+    pv "${MY_PATH}/sql01.sql" | mysql --host="${PDNS_DB_HOST}" --user="${MYSQL_ADMIN_USER}" --password="${MYSQL_ADMIN_PASSWD}" --database="${PDNS_DB_NAME}"
 
 else
     echo -e "\n--- --- --- PowerDNS database initiating is prohibited by configuration."
